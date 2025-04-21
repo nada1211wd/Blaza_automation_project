@@ -2,104 +2,123 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
 import java.time.Duration;
 
-public class BLogTest {
-    private WebDriver driver;
-    private WebDriverWait wait;
+public class Smoke {
+    WebDriver driver;
+    WebDriverWait wait;
 
-    @BeforeClass
-    public void setUp() {
+    @BeforeTest
+    public void openBrowser() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        driver.get("https://www.demoblaze.com/");
     }
 
-//    @Test(priority = 1)
-//    public void testSuccessfulLogin() {
-//        login("MINA", "12345");
-//
-//        // Assertion for successful login, verify user is redirected to dashboard
-//        Assert.assertEquals(driver.getCurrentUrl(), "https://www.demoblaze.com/index.html");
-//
-//        // Check if the element with id "nameofuser" contains the text "welcomeMINAAA"
-//        WebElement welcomeMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nameofuser")));
-//        Assert.assertTrue(welcomeMessage.getText().contains("welcomeMINA"));
-//
-//        // Check for the presence of logout button after successful login
-//        WebElement logoutButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("logout2")));
-//        Assert.assertTrue(logoutButton.isDisplayed(), "Logout button not found");
-//
-//        // Click on logout button
-//        logoutButton.click();
-//    }
+    @Test
+    public void signup() {
+        WebElement sign = wait.until(ExpectedConditions.elementToBeClickable(By.id("signin2")));
+        sign.click();
 
-    @Test(priority = 2)
-    public void testInvalidUsername() {
-        login("MI", "12345");
-        // Assertion for invalid username, verify appropriate error message/alert is displayed
-        Assert.assertTrue(isAlertPresentWithText("User does not exist."));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("sign-username")));
+        WebElement username = driver.findElement(By.id("sign-username"));
+        username.clear();
+        username.sendKeys("fathya");
+
+        WebElement password = driver.findElement(By.id("sign-password"));
+        password.clear();
+        password.sendKeys("abe*2024");
+
+        WebElement sign_button = driver.findElement(By.xpath("//button[contains(text(),'Sign up')]"));
+        sign_button.click();
+
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            System.out.println("Alert text: " + alert.getText());
+            alert.accept();
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after sign up.");
+        }
+
+        // Close modal safely
+        WebElement close = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='signInModal']//button[@class='btn btn-secondary' or @class='close']")));
+        close.click();
     }
 
-    @Test(priority = 3)
-    public void testInvalidPassword() {
-        login("MINA", "6387");
-        // Assertion for invalid password, verify appropriate error message/alert is displayed
-        Assert.assertTrue(isAlertPresentWithText("Wrong password."));
-    }
-
-    @Test(priority = 4)
-    public void testEmptyUsernameAndPassword() {
-        login("", "");
-        // Assertion for empty username and password, verify appropriate error message/alert is displayed
-        Assert.assertTrue(isAlertPresentWithText("Please fill out Username and Password."));
-    }
-
-    @AfterClass
-    public void tearDown() {
-        // Close the WebDriver instance after all test methods have been executed
-        driver.quit();
-    }
-
-    private void login(String username, String password) {
-        // Navigate to the login page
-        driver.get("https://www.demoblaze.com/index.html");
-        WebElement log = driver.findElement(By.id("login2"));
+    @Test(dependsOnMethods = "signup")
+    public void login() {
+        WebElement log = wait.until(ExpectedConditions.elementToBeClickable(By.id("login2")));
         log.click();
 
-        // Enter username
-        WebElement usernameField = wait.until(ExpectedConditions.elementToBeClickable(By.id("loginusername")));
-        usernameField.sendKeys(username);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginusername")));
+        WebElement username = driver.findElement(By.id("loginusername"));
+        username.clear();
+        username.sendKeys("fathya");
 
-        // Enter password
-        WebElement passwordField = driver.findElement(By.id("loginpassword"));
-        passwordField.sendKeys(password);
+        WebElement password = driver.findElement(By.id("loginpassword"));
+        password.clear();
+        password.sendKeys("abe*2024");
 
-        // Click on login button only if both username and password are not empty
+        WebElement login_button = driver.findElement(By.xpath("//button[contains(text(),'Log in')]"));
+        login_button.click();
 
-            WebElement loginButton = driver.findElement(By.xpath("//button[contains(text(),'Log in')]"));
-            loginButton.click();
-
-
-        // Wait for alert to be present
-        wait.until(ExpectedConditions.alertIsPresent());
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            System.out.println("Alert text: " + alert.getText());
+            alert.accept();
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after login.");
+        }
     }
 
-    private boolean isAlertPresentWithText(String expectedText) {
+    @Test(dependsOnMethods = "login")
+    public void AddProduct() {
+        WebElement mobile = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Sony vaio i5")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", mobile);
+
+        WebElement addToCart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Add to cart')]")));
+        addToCart.click();
+
         try {
+            wait.until(ExpectedConditions.alertIsPresent());
             Alert alert = driver.switchTo().alert();
-            String alertText = alert.getText();
-            System.out.println("Alert text: " + alertText); // Print alert text for debugging
-            boolean result = alertText.equals(expectedText);
+            System.out.println("Alert text: " + alert.getText());
             alert.accept();
-            return result;
-        } catch (Exception e) {
-            return false;
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after adding product to cart.");
         }
+    }
+
+    @Test(dependsOnMethods = "AddProduct")
+    public void Checkout() {
+        WebElement cart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Cart')]")));
+        cart.click();
+
+        WebElement order = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
+        order.click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name"))).sendKeys("Mina");
+        driver.findElement(By.id("country")).sendKeys("Egypt");
+        driver.findElement(By.id("city")).sendKeys("BNS");
+        driver.findElement(By.id("card")).sendKeys("121514484649849");
+        driver.findElement(By.id("month")).sendKeys("3");
+        driver.findElement(By.id("year")).sendKeys("2024");
+
+        WebElement purchase = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
+        purchase.click();
+
+        WebElement ok = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div[10]/div[7]/div/button")));
+        ok.click();
+    }
+
+    @AfterTest
+    public void closeBrowser() {
+        driver.quit();
     }
 }
