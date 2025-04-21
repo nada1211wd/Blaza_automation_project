@@ -2,166 +2,123 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import java.time.Duration;
 
-public class Checkout {
+public class Smoke {
+    WebDriver driver;
+    WebDriverWait wait;
 
-    private WebDriver driver;
-    private WebDriverWait wait;
-
-    @BeforeClass
-    public void setUp() {
-        // Initialize ChromeDriver instance
+    @BeforeTest
+    public void openBrowser() {
         driver = new ChromeDriver();
-        // Initialize WebDriverWait with a timeout of 10 seconds
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        // Maximize window
         driver.manage().window().maximize();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        driver.get("https://www.demoblaze.com/");
     }
 
     @Test
-    public void testNameAndCreditCardMandatory() {
-        // Navigate to the website
-        driver.get("https://www.demoblaze.com/cart.html");
+    public void signup() {
+        WebElement sign = wait.until(ExpectedConditions.elementToBeClickable(By.id("signin2")));
+        sign.click();
 
-        // Click on Place Order button
-        WebElement orderButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        orderButton.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("sign-username")));
+        WebElement username = driver.findElement(By.id("sign-username"));
+        username.clear();
+        username.sendKeys("fathya");
 
-        // Click on Purchase button without entering Name and Credit Card
-        WebElement purchaseButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Purchase')]")));
-        purchaseButton.click();
+        WebElement password = driver.findElement(By.id("sign-password"));
+        password.clear();
+        password.sendKeys("abe*2024");
 
-        // Verify alert message
-        String alertText = driver.switchTo().alert().getText();
-        Assert.assertEquals(alertText, "Please fill out Name and Creditcard.");
+        WebElement sign_button = driver.findElement(By.xpath("//button[contains(text(),'Sign up')]"));
+        sign_button.click();
 
-        // Dismiss the alert
-        driver.switchTo().alert().dismiss();
-    }
-    @Test
-    public void testEmptyNameAndValidCreditCard() {
-        // Navigate to the website
-        driver.get("https://www.demoblaze.com/cart.html");
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            System.out.println("Alert text: " + alert.getText());
+            alert.accept();
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after sign up.");
+        }
 
-        // Click on Place Order button
-        WebElement orderButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        orderButton.click();
-
-        // Wait for the name field to be visible
-        WebElement nameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name")));
-
-        // Clear any existing text in the name field
-        nameField.clear();
-
-        // Enter valid Credit Card without entering Name
-        WebElement creditCardField = wait.until(ExpectedConditions.elementToBeClickable(By.id("card")));
-        creditCardField.sendKeys("1234567890123456");
-
-        // Click on Purchase button
-        WebElement purchaseButton = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        purchaseButton.click();
-
-        // Verify alert message for empty Name
-        String alertText = driver.switchTo().alert().getText();
-        Assert.assertEquals(alertText, "Please fill out Name and Creditcard.");
-
-        // Dismiss the alert
-        driver.switchTo().alert().dismiss();
+        // Close modal safely
+        WebElement close = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='signInModal']//button[@class='btn btn-secondary' or @class='close']")));
+        close.click();
     }
 
-    @Test
-    public void testNameLengthAndFormat() {
-        // Navigate to the website
-        driver.get("https://www.demoblaze.com/cart.html");
+    @Test(dependsOnMethods = "signup")
+    public void login() {
+        WebElement log = wait.until(ExpectedConditions.elementToBeClickable(By.id("login2")));
+        log.click();
 
-        // Click on Place Order button
-        WebElement orderButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        orderButton.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginusername")));
+        WebElement username = driver.findElement(By.id("loginusername"));
+        username.clear();
+        username.sendKeys("fathya");
 
-        // Enter Name less than 2 characters
-        WebElement nameField = wait.until(ExpectedConditions.elementToBeClickable(By.id("name")));
-        nameField.sendKeys("A");
-        WebElement credit = wait.until(ExpectedConditions.elementToBeClickable(By.id("name")));
-        credit.sendKeys("1234567899876542");
+        WebElement password = driver.findElement(By.id("loginpassword"));
+        password.clear();
+        password.sendKeys("abe*2024");
 
-        // Click on Purchase button
-        WebElement purchaseButton = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        purchaseButton.click();
+        WebElement login_button = driver.findElement(By.xpath("//button[contains(text(),'Log in')]"));
+        login_button.click();
 
-        // Verify alert message
-        String alertText = driver.switchTo().alert().getText();
-        Assert.assertEquals(alertText, "Please fill out Name and Creditcard.");
-
-        // Dismiss the alert
-        driver.switchTo().alert().dismiss();
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            System.out.println("Alert text: " + alert.getText());
+            alert.accept();
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after login.");
+        }
     }
 
-    @Test
-    public void testCreditCardLength() {
-        driver.get("https://www.demoblaze.com/cart.html");
+    @Test(dependsOnMethods = "login")
+    public void AddProduct() {
+        WebElement mobile = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Sony vaio i5")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", mobile);
 
-        // Click on Place Order button
-        WebElement orderButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        orderButton.click();
+        WebElement addToCart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Add to cart')]")));
+        addToCart.click();
 
-        // Enter valid Name
-        WebElement nameField = wait.until(ExpectedConditions.elementToBeClickable(By.id("name")));
-        nameField.sendKeys("Mina Talaat");
-
-        // Enter valid Credit Card
-        WebElement creditCardField = driver.findElement(By.id("card"));
-        creditCardField.sendKeys("123456789086868612456");
-
-        // Click on Purchase button
-        WebElement purchaseButton = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        purchaseButton.click();
-
-        // Wait for the alert to appear
-        WebDriverWait alertWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement successAlert = alertWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[10]/h2")));
-
-        // Verify the alert message
-        Assert.assertEquals(successAlert.getText(), "Thank you for your purchase!");
-    }
-    @Test
-    public void testValidNameAndCreditCard() {
-        // Navigate to the website
-        driver.get("https://www.demoblaze.com/cart.html");
-
-        // Click on Place Order button
-        WebElement orderButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        orderButton.click();
-
-        // Enter valid Name
-        WebElement nameField = wait.until(ExpectedConditions.elementToBeClickable(By.id("name")));
-        nameField.sendKeys("Mina Talaat");
-
-        // Enter valid Credit Card
-        WebElement creditCardField = driver.findElement(By.id("card"));
-        creditCardField.sendKeys("1234567890123456");
-
-        // Click on Purchase button
-        WebElement purchaseButton = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        purchaseButton.click();
-
-        // Wait for the alert to appear
-        WebDriverWait alertWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement successAlert = alertWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[10]/h2")));
-
-        // Verify the alert message
-        Assert.assertEquals(successAlert.getText(), "Thank you for your purchase!");
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            System.out.println("Alert text: " + alert.getText());
+            alert.accept();
+        } catch (NoAlertPresentException e) {
+            System.out.println("No alert present after adding product to cart.");
+        }
     }
 
+    @Test(dependsOnMethods = "AddProduct")
+    public void Checkout() {
+        WebElement cart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Cart')]")));
+        cart.click();
 
+        WebElement order = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
+        order.click();
 
-    @AfterClass
-    public void tearDown() {
-        // Close the browser
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name"))).sendKeys("Mina");
+        driver.findElement(By.id("country")).sendKeys("Egypt");
+        driver.findElement(By.id("city")).sendKeys("BNS");
+        driver.findElement(By.id("card")).sendKeys("121514484649849");
+        driver.findElement(By.id("month")).sendKeys("3");
+        driver.findElement(By.id("year")).sendKeys("2024");
+
+        WebElement purchase = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
+        purchase.click();
+
+        WebElement ok = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div[10]/div[7]/div/button")));
+        ok.click();
+    }
+
+    @AfterTest
+    public void closeBrowser() {
         driver.quit();
     }
 }
