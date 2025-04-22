@@ -1,124 +1,96 @@
-import org.openqa.selenium.*;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import java.time.Duration;
 
-public class Smoke {
-    WebDriver driver;
-    WebDriverWait wait;
 
-    @BeforeTest
-    public void openBrowser() {
+public class ContactTest {
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    @BeforeClass
+    public void setUp() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        driver.get("https://www.demoblaze.com/");
+
+    }
+    @Test
+    public void testContactsuccessfully(){
+        contact("nada@gmail.com" ,"nada" , "thankyou" );
+        Assert.assertTrue(isAlertPresentWithText("Thanks for the message!!"));
     }
 
     @Test
-    public void signup() {
-        WebElement sign = wait.until(ExpectedConditions.elementToBeClickable(By.id("signin2")));
-        sign.click();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("sign-username")));
-        WebElement username = driver.findElement(By.id("sign-username"));
-        username.clear();
-        username.sendKeys("fathya");
-
-        WebElement password = driver.findElement(By.id("sign-password"));
-        password.clear();
-        password.sendKeys("abe*2024");
-
-        WebElement sign_button = driver.findElement(By.xpath("//button[contains(text(),'Sign up')]"));
-        sign_button.click();
-
-        try {
-            wait.until(ExpectedConditions.alertIsPresent());
-            Alert alert = driver.switchTo().alert();
-            System.out.println("Alert text: " + alert.getText());
-            alert.accept();
-        } catch (NoAlertPresentException e) {
-            System.out.println("No alert present after sign up.");
-        }
-
-        // Close modal safely
-        WebElement close = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='signInModal']//button[@class='btn btn-secondary' or @class='close']")));
-        close.click();
+    public void testContactwithvalidemailandmessage(){
+        contact("nada@gmail.com" ,"" , "thankyou" );
+        Assert.assertTrue(isAlertPresentWithText("Please enter name!!"));
     }
 
-    @Test(dependsOnMethods = "signup")
-    public void login() {
-        WebElement log = wait.until(ExpectedConditions.elementToBeClickable(By.id("login2")));
-        log.click();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginusername")));
-        WebElement username = driver.findElement(By.id("loginusername"));
-        username.clear();
-        username.sendKeys("fathya");
-
-        WebElement password = driver.findElement(By.id("loginpassword"));
-        password.clear();
-        password.sendKeys("abe*2024");
-
-        WebElement login_button = driver.findElement(By.xpath("//button[contains(text(),'Log in')]"));
-        login_button.click();
-
-        try {
-            wait.until(ExpectedConditions.alertIsPresent());
-            Alert alert = driver.switchTo().alert();
-            System.out.println("Alert text: " + alert.getText());
-            alert.accept();
-        } catch (NoAlertPresentException e) {
-            System.out.println("No alert present after login.");
-        }
+    @Test
+    public void testContactwithblankfields(){
+        contact("" ,"" , "" );
+        Assert.assertFalse(isAlertPresentWithText("Please enter data."));
     }
 
-    @Test(dependsOnMethods = "login")
-    public void AddProduct() {
-        WebElement mobile = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Sony vaio i5")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", mobile);
-
-        WebElement addToCart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Add to cart')]")));
-        addToCart.click();
-
-        try {
-            wait.until(ExpectedConditions.alertIsPresent());
-            Alert alert = driver.switchTo().alert();
-            System.out.println("Alert text: " + alert.getText());
-            alert.accept();
-        } catch (NoAlertPresentException e) {
-            System.out.println("No alert present after adding product to cart.");
-        }
+    @Test
+    public void testContactwithinvalidemailformat(){
+        contact("nadaaaglmailcom" ,"nada" , "thankyou" );
+        Assert.assertFalse(isAlertPresentWithText(" email must contain @."));
+    }
+    @Test
+    public void testContactwithvalidemailandemptymassege(){
+        contact("nadaaag@lmailcom" ,"nada" , "" );
+        Assert.assertFalse(isAlertPresentWithText("Please enter your massage."));
     }
 
-    @Test(dependsOnMethods = "AddProduct")
-    public void Checkout() {
-        WebElement cart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Cart')]")));
-        cart.click();
-
-        WebElement order = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
-        order.click();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name"))).sendKeys("Mina");
-        driver.findElement(By.id("country")).sendKeys("Egypt");
-        driver.findElement(By.id("city")).sendKeys("BNS");
-        driver.findElement(By.id("card")).sendKeys("121514484649849");
-        driver.findElement(By.id("month")).sendKeys("3");
-        driver.findElement(By.id("year")).sendKeys("2024");
-
-        WebElement purchase = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        purchase.click();
-
-        WebElement ok = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div[10]/div[7]/div/button")));
-        ok.click();
-    }
-
-    @AfterTest
-    public void closeBrowser() {
+    @AfterClass
+    public void CloseBrowser() {
         driver.quit();
+    }
+
+    private void contact(String email, String name, String message) {
+        driver.get("https://www.demoblaze.com/index.html");
+        WebElement contact = driver.findElement(By.xpath("//a[contains(text(),'Contact')]"));
+        contact.click();
+
+        WebElement ContactEmailField = wait.until(ExpectedConditions.elementToBeClickable(By.id("recipient-email")));
+        ContactEmailField.sendKeys(email);
+
+        WebElement ContactNameField = driver.findElement(By.id("recipient-name"));
+        ContactNameField.sendKeys(name);
+
+        WebElement MessageField = driver.findElement(By.id("message-text"));
+        MessageField.sendKeys(message);
+
+
+        WebElement SendMessageButton = driver.findElement(By.xpath("//button[contains(text(),'Send message')]"));
+        SendMessageButton.click();
+
+
+        wait.until(ExpectedConditions.alertIsPresent());
+    }
+
+    private boolean isAlertPresentWithText(String expectedText) {
+        try {
+            Alert alert = driver.switchTo().alert();
+            String alertText = alert.getText();
+            System.out.println("Alert text: " + alertText);
+            boolean result = alertText.equals(expectedText);
+            alert.accept();
+            return result;
+        } catch (Exception e) {
+            return false;
+        }
+
     }
 }
