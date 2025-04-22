@@ -15,47 +15,54 @@ public class Smoke {
     public void openBrowser() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Increased timeout
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         driver.get("https://www.demoblaze.com/");
     }
 
     @Test
     public void signup() {
-        WebElement sign = driver.findElement(By.id("signin2"));
+        WebElement sign = wait.until(ExpectedConditions.elementToBeClickable(By.id("signin2")));
         sign.click();
 
-        WebElement username = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='sign-username']")));
-        username.sendKeys("MINAAA");
-        WebElement password = driver.findElement(By.xpath("//*[@id='sign-password']"));
-        password.sendKeys("12345");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("sign-username")));
+        WebElement username = driver.findElement(By.id("sign-username"));
+        username.clear();
+        username.sendKeys("fat");
+
+        WebElement password = driver.findElement(By.id("sign-password"));
+        password.clear();
+        password.sendKeys("abe*2024");
+
         WebElement sign_button = driver.findElement(By.xpath("//button[contains(text(),'Sign up')]"));
         sign_button.click();
 
         try {
             wait.until(ExpectedConditions.alertIsPresent());
             Alert alert = driver.switchTo().alert();
-            String alertText = alert.getText();
-            System.out.println("Alert text: " + alertText); // Print alert text for debugging
+            System.out.println("Alert text: " + alert.getText());
             alert.accept();
-        } catch (Exception e) {
+        } catch (NoAlertPresentException e) {
             System.out.println("No alert present after sign up.");
         }
 
-        // Close the modal
-        WebElement close = driver.findElement(By.xpath("//*[@id='signInModal']/div/div/div[1]/button/span"));
+        // Close modal safely
+        WebElement close = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='signInModal']//button[@class='btn btn-secondary' or @class='close']")));
         close.click();
     }
 
     @Test(dependsOnMethods = "signup")
     public void login() {
-        WebElement log = driver.findElement(By.id("login2"));
+        WebElement log = wait.until(ExpectedConditions.elementToBeClickable(By.id("login2")));
         log.click();
 
-        WebElement username = wait.until(ExpectedConditions.elementToBeClickable(By.id("loginusername")));
-        username.sendKeys("MINAAA");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginusername")));
+        WebElement username = driver.findElement(By.id("loginusername"));
+        username.clear();
+        username.sendKeys("fat");
 
         WebElement password = driver.findElement(By.id("loginpassword"));
-        password.sendKeys("12345");
+        password.clear();
+        password.sendKeys("abe*2024");
 
         WebElement login_button = driver.findElement(By.xpath("//button[contains(text(),'Log in')]"));
         login_button.click();
@@ -63,10 +70,9 @@ public class Smoke {
         try {
             wait.until(ExpectedConditions.alertIsPresent());
             Alert alert = driver.switchTo().alert();
-            String alertText = alert.getText();
-            System.out.println("Alert text: " + alertText); // Print alert text for debugging
+            System.out.println("Alert text: " + alert.getText());
             alert.accept();
-        } catch (Exception e) {
+        } catch (NoAlertPresentException e) {
             System.out.println("No alert present after login.");
         }
     }
@@ -74,51 +80,46 @@ public class Smoke {
     @Test(dependsOnMethods = "login")
     public void AddProduct() {
         WebElement mobile = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Sony vaio i5")));
-        mobile.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", mobile);
 
         WebElement addToCart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Add to cart')]")));
         addToCart.click();
 
         try {
+            wait.until(ExpectedConditions.alertIsPresent());
             Alert alert = driver.switchTo().alert();
-            String alertText = alert.getText();
-            System.out.println("Alert text: " + alertText); // Print alert text for debugging
+            System.out.println("Alert text: " + alert.getText());
             alert.accept();
         } catch (NoAlertPresentException e) {
             System.out.println("No alert present after adding product to cart.");
         }
     }
 
-
-
     @Test(dependsOnMethods = "AddProduct")
     public void Checkout() {
-
-        WebElement cart = driver.findElement(By.xpath("//a[contains(text(),'Cart')]"));
+        WebElement cart = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Cart')]")));
         cart.click();
-        WebElement order = driver.findElement(By.xpath("//button[contains(text(),'Place Order')]"));
+
+        WebElement order = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Place Order')]")));
         order.click();
-        WebElement Name = wait.until(ExpectedConditions.elementToBeClickable(By.id("name")));
-        Name.sendKeys("Mina");
-        WebElement Country = driver.findElement(By.id("country"));
-        Country.sendKeys("Egypt");
-        WebElement City = driver.findElement(By.id("city"));
-        City.sendKeys("BNS");
-        WebElement Credit = driver.findElement(By.id("card"));
-        Credit.sendKeys("121514484649849");
-        WebElement Month = driver.findElement(By.id("month"));
-        Month.sendKeys("3");
-        WebElement Year = driver.findElement(By.id("year"));
-        Year.sendKeys("2024");
-        WebElement Purchase = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
-        Purchase.click();
-        WebElement ok = driver.findElement(By.xpath("/html/body/div[10]/div[7]/div/button"));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name"))).sendKeys("Mina");
+        driver.findElement(By.id("country")).sendKeys("Egypt");
+        driver.findElement(By.id("city")).sendKeys("BNS");
+        driver.findElement(By.id("card")).sendKeys("121514484649849");
+        driver.findElement(By.id("month")).sendKeys("3");
+        driver.findElement(By.id("year")).sendKeys("2024");
+
+        WebElement purchase = driver.findElement(By.xpath("//button[contains(text(),'Purchase')]"));
+        purchase.click();
+
+        WebElement ok = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div[10]/div[7]/div/button")));
         ok.click();
     }
-
 
     @AfterTest
     public void closeBrowser() {
         driver.quit();
     }
 }
+
