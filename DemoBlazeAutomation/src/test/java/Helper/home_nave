@@ -1,0 +1,141 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.time.Duration;
+
+public class Home_nav {
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    @BeforeClass
+    public void setUp() {
+        driver = new ChromeDriver();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(25));
+        driver.manage().window().maximize();
+        driver.get("https://www.demoblaze.com/index.html");
+
+        // Wait for a primary element to ensure the page is loaded
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("nava"))); // Replace "nava" with the actual element if needed
+    }
+
+    @Test
+    public void testHomeLink() {
+        try {
+            // Wait for the 'Home' link to be present and clickable
+            WebElement homeLink = wait.until(ExpectedConditions.presenceOfElementLocated(By.linkText("Home")));
+            wait.until(ExpectedConditions.elementToBeClickable(homeLink)); // Ensure it's clickable
+            
+            // Print page source for debugging if the link is not found
+            System.out.println("Page Source: " + driver.getPageSource());
+
+            // Verify that the Home link is displayed and clickable
+            Assert.assertTrue(homeLink.isDisplayed(), "Home link is not displayed.");
+            Assert.assertTrue(homeLink.isEnabled(), "Home link is not clickable.");
+
+            // Click on the Home link and verify the navigation
+            homeLink.click();
+            wait.until(ExpectedConditions.urlContains("index.html"));  // Confirm the page URL after clicking
+            System.out.println("TC_NAV_001 Passed - Home");
+        } catch (Exception e) {
+            // Catch any errors and log them for easier debugging
+            System.err.println("TC_NAV_001 Failed - Home Link Issue");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testContactLink() {
+        try {
+            // Wait for the Contact link to be clickable
+            WebElement contactLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Contact")));
+            contactLink.click();
+
+            // Wait until the Contact modal appears
+            WebElement contactModal = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("exampleModal")));
+            Assert.assertTrue(contactModal.isDisplayed(), "Contact modal not displayed.");
+            
+            // Close the modal
+            driver.findElement(By.xpath("//div[@id='exampleModal']//button[text()='Close']")).click();
+            System.out.println("TC_NAV_002 Passed - Contact");
+        } catch (Exception e) {
+            // Catch any errors and log them for easier debugging
+            System.err.println("TC_NAV_002 Failed - Contact Link Issue");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testAboutLink() {
+        try {
+            // Wait for the About Us link to be clickable
+            WebElement aboutLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("About us")));
+            aboutLink.click();
+
+            // Wait until the About Us modal appears
+            WebElement videoModal = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("videoModal")));
+            Assert.assertTrue(videoModal.isDisplayed(), "About Us modal not displayed.");
+            
+            // Close the modal
+            driver.findElement(By.xpath("//div[@id='videoModal']//button[text()='Close']")).click();
+            System.out.println("TC_NAV_003 Passed - About Us");
+        } catch (Exception e) {
+            // Catch any errors and log them for easier debugging
+            System.err.println("TC_NAV_003 Failed - About Us Link Issue");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testCartLink() {
+        try {
+            // Wait for the Cart link to be clickable
+            WebElement cartLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Cart")));
+            cartLink.click();
+
+            // Wait until the Cart page URL is loaded
+            wait.until(ExpectedConditions.urlContains("cart.html"));
+            Assert.assertTrue(driver.getCurrentUrl().contains("cart.html"), "Cart page URL not loaded.");
+            System.out.println("TC_NAV_004 Passed - Cart");
+        } catch (Exception e) {
+            // Catch any errors and log them for easier debugging
+            System.err.println("TC_NAV_004 Failed - Cart Link Issue");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSignUpLink() {
+        try {
+            // Wait for the Sign Up link to be clickable
+            WebElement signupLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Sign up")));
+            signupLink.click();
+
+            // Wait until the Sign Up modal appears
+            WebElement signUpModal = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("signInModal")));
+            Assert.assertTrue(signUpModal.isDisplayed(), "Sign Up modal not displayed.");
+
+            // Close the modal
+            driver.findElement(By.xpath("//div[@id='signInModal']//button[text()='Close']")).click();
+            System.out.println("TC_NAV_005 Passed - Sign Up");
+        } catch (Exception e) {
+            // Catch any errors and log them for easier debugging
+            System.err.println("TC_NAV_005 Failed - Sign Up Link Issue");
+            e.printStackTrace();
+        }
+    }
+
+    @AfterClass
+    public void CloseBrowser() {
+        // Close the browser after the test
+        driver.quit();
+    }
+}
