@@ -3,15 +3,12 @@ Blaze_automation_project is an automated test suite developed to verify the core
 
 ## 🧪 Features Covered
 - User Login
-- Flight Search
-- Flight Booking
 - Purchase Confirmation
 - Negative Scenarios (e.g., invalid input)
 
 ## 🛠️ Tech Stack
-- Language: Python  
-- Automation Framework: Selenium WebDriver  
-- Test Runner: PyTest  
+- Language: java
+- Automation Framework: Selenium WebDriver   
 - Reporting: HTML Reports  
 - Browser: Chrome (via ChromeDriver)
 
