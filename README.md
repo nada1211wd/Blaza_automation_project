@@ -1,4 +1,5 @@
 # Blaze_automation_project
+# Blaze_automation_project
 
 ## 📌 Project Overview
 Blaze_automation_project is an automated test suite developed to verify the core functionalities of the Blaze web application. The automation is built using **Selenium WebDriver** with **Python**, focusing on ensuring high test coverage and faster regression cycles.
@@ -18,4 +19,3 @@ Blaze_automation_project is an automated test suite developed to verify the core
 - Browser: Chrome (via ChromeDriver)
 
 ## 🧾 Folder Structure
-# Blaze_automation_project
